@@ -19,6 +19,7 @@ div.olMap {
 
 div.olMapViewport {
     text-align: left;
+    -ms-touch-action: none;
 }
 
 div.olLayerDiv {
@@ -40,6 +41,10 @@ div.olLayerDiv {
 .olLayerGoogleV3.olLayerGooglePoweredBy {
     bottom: 15px !important;
 }
+/* GMaps should not set styles on its container */
+.olForeignContainer {
+    opacity: 1 !important;
+}
 .olControlAttribution {
     font-size: smaller;
     right: 3px;
@@ -48,8 +53,8 @@ div.olLayerDiv {
     display: block;
 }
 .olControlScale {
-    left: 3px;
-    bottom: 10px;
+    right: 3px;
+    bottom: 3em;
     display: block;
     position: absolute;
     font-size: smaller;
@@ -82,7 +87,7 @@ div.olLayerDiv {
 }
 
 div.olControlMousePosition {
-    bottom: 10px;
+    bottom: 0;
     right: 3px;
     display: block;
     position: absolute;
@@ -441,7 +446,6 @@ span.olGoogleAttribution.hybrid a, span.olGoogleAttribution.satellite a {
     background-position: -26px -24px;
 }
 
-
 .olControlPanel .streetViewItemActive{
     background: url("${sprite}") -2px 196px !important;;
 }
@@ -522,4 +526,31 @@ a.olControlZoomOut {
     -moz-transition: opacity 0.2s linear;
     -o-transition: opacity 0.2s linear;
     transition: opacity 0.2s linear;
+}
+
+/* Turn on GPU support where available */
+.olTileImage {
+    -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
+    -o-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    -ms-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-perspective: 1000;
+    -moz-perspective: 1000;
+    -ms-perspective: 1000;
+    perspective: 1000;
+}
+
+/* when replacing tiles, do not show tile and backbuffer at the same time */
+.olTileReplacing {
+    display: none;
+}
+
+/* override any max-width image settings (e.g. bootstrap.css) */
+img.olTileImage {
+    max-width: none;
 }
