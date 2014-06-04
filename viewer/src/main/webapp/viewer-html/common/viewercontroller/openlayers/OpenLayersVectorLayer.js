@@ -76,7 +76,7 @@ Ext.define("viewer.viewercontroller.openlayers.OpenLayersVectorLayer",{
         this.drawFeatureControls.push(this.point);
         
         // The modifyfeature control allows us to edit and select features.
-        this.modifyFeature = new OpenLayers.Control.ModifyFeature(this.frameworkLayer,{createVertices : true,vertexRenderIntent: "select"});
+        this.modifyFeature = new OpenLayers.Control.ModifyFeature(this.frameworkLayer, { createVertices : true, standalone:false });
         
         var map = this.viewerController.mapComponent.getMap().getFrameworkMap();
         map.addControl(this.point);
@@ -85,7 +85,6 @@ Ext.define("viewer.viewercontroller.openlayers.OpenLayersVectorLayer",{
         map.addControl(this.circle);
         map.addControl(this.modifyFeature);
         
-        this.modifyFeature.selectControl.events.register("featurehighlighted", this, this.activeFeatureChanged);
         this.frameworkLayer.events.register("afterfeaturemodified", this, this.featureModified);
         this.frameworkLayer.events.register("featuremodified", this, this.featureModified);
         this.frameworkLayer.events.register("featureadded", this, this.featureAdded);
@@ -97,7 +96,7 @@ Ext.define("viewer.viewercontroller.openlayers.OpenLayersVectorLayer",{
      */
     getCurrentStyleHash : function(){
           var hash = {
-            'strokeColor' : this.colorPrefix+ this.style['strokecolor'],
+           'strokeColor' : this.colorPrefix+ this.style['strokecolor'],
             'strokeWidth': 3,
             'pointRadius': 6,
             'fillColor' : this.colorPrefix + this.style['fillcolor'],
@@ -116,6 +115,9 @@ Ext.define("viewer.viewercontroller.openlayers.OpenLayersVectorLayer",{
      */
     removeAllFeatures : function(){
         this.getFrameworkLayer().removeAllFeatures();
+         // Quite ugly, but seems better than iterating over every feature and unselecting it at the modifyFeature: that has the unwanted side-effect of render it 
+         // to the default intent. Had expected that ModifyFeature control had a removeAll() function, but it didn't
+        this.modifyFeature.feature=null;   
         this.stopDrawing();
     },
 
@@ -221,6 +223,7 @@ Ext.define("viewer.viewercontroller.openlayers.OpenLayersVectorLayer",{
      */
     activeFeatureChanged : function (object){
         var feature = this.fromOpenLayersFeature (object.feature);
+        this.modifyFeature.selectFeature(object.feature);
         this.fireEvent(viewer.viewercontroller.controller.Event.ON_ACTIVE_FEATURE_CHANGED,this,feature);
     },
     
@@ -254,8 +257,7 @@ Ext.define("viewer.viewercontroller.openlayers.OpenLayersVectorLayer",{
      * TODO: fix the selecting of a newly added point (after adding another geometry first)
      */
     editFeature : function (feature){
-        this.modifyFeature.selectControl.unselectAll();
-        this.modifyFeature.selectControl.select(feature);
+        this.modifyFeature.selectFeature(feature);
         var featureObject = this.fromOpenLayersFeature (feature);
         this.fireEvent(viewer.viewercontroller.controller.Event.ON_ACTIVE_FEATURE_CHANGED,this,featureObject);
     },
