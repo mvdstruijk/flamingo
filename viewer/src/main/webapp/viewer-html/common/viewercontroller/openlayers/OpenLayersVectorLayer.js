@@ -88,7 +88,7 @@ Ext.define("viewer.viewercontroller.openlayers.OpenLayersVectorLayer",{
         this.frameworkLayer.events.register("afterfeaturemodified", this, this.featureModified);
         this.frameworkLayer.events.register("featuremodified", this, this.featureModified);
         this.frameworkLayer.events.register("featureadded", this, this.featureAdded);
-        
+        this.frameworkLayer.events.register("beforefeaturemodified", this, this.activeFeatureChanged); // Fired by the modifyfeature control. Functions as the activeFeatureChanged event
         this.modifyFeature.activate();
     },
     /**
@@ -223,7 +223,6 @@ Ext.define("viewer.viewercontroller.openlayers.OpenLayersVectorLayer",{
      */
     activeFeatureChanged : function (object){
         var feature = this.fromOpenLayersFeature (object.feature);
-        this.modifyFeature.selectFeature(object.feature);
         this.fireEvent(viewer.viewercontroller.controller.Event.ON_ACTIVE_FEATURE_CHANGED,this,feature);
     },
     
