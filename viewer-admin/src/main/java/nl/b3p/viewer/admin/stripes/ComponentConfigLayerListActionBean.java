@@ -140,19 +140,14 @@ public class ComponentConfigLayerListActionBean implements ActionBean {
 
         if (appId != null) {
             Application app = em.find(Application.class, appId);
-            long startTime = System.currentTimeMillis();
             List<ApplicationLayer> layers =LayerListHelper.getLayers(app, filterable, bufferable, editable, influence, arc, wfs, attribute, false, null,em);
-            long end = System.currentTimeMillis();
             for (ApplicationLayer layer : layers) {
                 try {
-                    jsonArray.put(layer.toJSONObject(em));
+                    jsonArray.put(layer.toSimpleJSONObject(em));
                 } catch (JSONException je) {
                     log.error("Error while getting JSONObject of Layer with id: " + layer.getId(), je);
                 }
             }
-            long end2 = System.currentTimeMillis();
-            log.error("Layerlist:" + (end - startTime));
-            log.error("toJSON:" + (end2 - end));
         }
         return new StreamingResolution("application/json", new StringReader(jsonArray.toString()));
     }
