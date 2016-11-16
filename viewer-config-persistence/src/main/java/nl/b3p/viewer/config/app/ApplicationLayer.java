@@ -25,6 +25,8 @@ import nl.b3p.viewer.config.services.GeoService;
 import nl.b3p.viewer.config.services.Layer;
 import nl.b3p.viewer.config.services.SimpleFeatureType;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,6 +37,9 @@ import org.json.JSONObject;
  */
 @Entity
 public class ApplicationLayer {
+    
+    private static final Log log = LogFactory.getLog(ApplicationLayer.class);
+    
     @Id
     private Long id;
 
@@ -197,24 +202,34 @@ public class ApplicationLayer {
         }
     }
 
+    public JSONObject toSimpleJSONObject(EntityManager em) throws JSONException {
+        JSONObject o = new JSONObject();
+        o.put("id", getId());
+        o.put("layerName", getLayerName());
+        if (getService() != null) {
+            o.put("serviceId", getService().getId());
+        }
+        long s1 = System.nanoTime();
+        o.put("alias", getDisplayName(em));
+        long s2 = System.nanoTime();
+        log.error("displaynam" + (s2-s1));
+        return o;
+    }
+
     public JSONObject toJSONObject(EntityManager em) throws JSONException {
         return toJSONObject(false, false, em, null);
     }
     
     public JSONObject toJSONObject(boolean includeAttributes, boolean includeRelations,EntityManager em, Application app) throws JSONException {
-
-        JSONObject o = new JSONObject();
-        o.put("id", getId());
-        o.put("layerName", getLayerName());
-        if(getService() != null) {
-            o.put("serviceId", getService().getId());
-        }
-        o.put("alias", getDisplayName(em));
-
+        long s1 = System.nanoTime();
+        JSONObject o = toSimpleJSONObject(em);
+        long s2 = System.nanoTime();
         Layer l = getService() == null ? null : getService().getLayer(getLayerName(), em);
+        long s3 = System.nanoTime();
         if(l != null && l.getFeatureType() != null) {
             o.put("featureType", l.getFeatureType().getId());
         }
+        long s4 = System.nanoTime();
         /* TODO add attribute if writeable according to al.getWriters() */
 
         if(!getDetails().isEmpty()) {
@@ -224,14 +239,21 @@ public class ApplicationLayer {
                 d.put(e.getKey(), e.getValue().getValue());
             }
         }
+        long s5 = System.nanoTime();
         
         if(includeAttributes) {
             addAttributesJSON(o, includeRelations, em);
         }
-
+        long s6 = System.nanoTime();
         StartLayer sl = getStartLayers().get(app);
         o.put("checked", sl != null ? sl.isChecked() : false);
-
+        long s7 = System.nanoTime();
+        log.error("s1" + (s2-s1));
+        log.error("s2" + (s3-s2));
+        log.error("s3" + (s4-s3));
+        log.error("s4" + (s5-s4));
+        log.error("s5" + (s6-s5));
+        log.error("s6" + (s7-s6));
         return o;
     }
     
